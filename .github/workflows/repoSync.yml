@@ -1,7 +1,11 @@
+# Fork Sync With Upstream · Actions · GitHub Marketplace
+# cf. https://github.com/marketplace/actions/fork-sync-with-upstream
+
+name: fork-sync-with-upstream
+
 on:
   schedule:
     - cron:  '0 18 * * *'
-    # scheduled at 07:00 every Monday and Thursday
 
   workflow_dispatch:  # click the button on Github repo!
 
@@ -24,8 +28,8 @@ jobs:
       id: sync
       uses: aormsby/Fork-Sync-With-Upstream-action@v2.1
       with:
-        upstream_repository: aormsby/hugo-deploy-to-pages
-        upstream_branch: main
+        upstream_repository: togostanza/metastanza
+        upstream_branch: master
         target_branch: main
         git_pull_args: --ff-only                    # optional arg use, defaults to simple 'pull'
         github_token: ${{ secrets.GITHUB_TOKEN }}   # optional, for accessing repos that require authentication
