@@ -1,5 +1,4 @@
 import * as d3 from "d3";
-// import metastanza from "@/lib/metastanza_utils.js";
 import { getFormatedJson, appendDlButton } from "@/lib/metastanza_utils.js";
 import a_dataset from "../gwas-manhattan-plot/gwas.var2.json.js";
 
@@ -24,10 +23,10 @@ console.log("【project_name】", project_name);
 const stages = Object.values(project);
 console.log("【stages】", stages);
 
-const stages_name = Object.keys(...stages)[0]; // can be 4 variations
-console.log("【stages_name】", stages_name);
+const stage_name = Object.keys(...stages)[0]; // can be 4 variations
+console.log("【stage_name】", stage_name);
 
-// get sach stage's information
+// get stage information
 const stage = Object.values(...stages);
 console.log("【conditions】", stage);
 
@@ -38,7 +37,7 @@ console.log("【condition1】", condition1);
 console.log("【condition2】", condition2);
 
 // variants
-const variants = stage[0].variants;
+let variants = stage[0].variants; //init
 console.log("【variants】", variants);
 
 // adjust datas
@@ -61,8 +60,10 @@ export default async function gwasManhattanPlot(stanza, params) {
     template: "stanza.html.hbs",
     parameters: {
       greeting: `Hello, ${params["say-to"]}!`,
+      title: params['title'],
       study_name,
       project_name,
+      stage_name,
       condition1,
       condition2,
     },
@@ -77,6 +78,51 @@ export default async function gwasManhattanPlot(stanza, params) {
   console.log("a_dataset", a_dataset);
   console.log("variants", variants);
 
+  //get checked stage
+  const stageBtn = stanza.root.querySelectorAll(".stage-btn");
+  const stageLabel = stanza.root.querySelectorAll(".stage-label");
+  for(let i=0; i<stageBtn.length; i++){
+    stageBtn[i].addEventListener("click",checkStage);
+    if(stageBtn[i].checked != true){
+      stageLabel[i].style.color = "#99acb2";
+    }
+  }
+
+  function checkStage(){
+    let flag = false;
+    for(let i=0; i<stageBtn.length;i++){
+      stageLabel[i].style.color = "#99acb2";
+        if(stageBtn[i].checked){ 
+            flag = true;
+            variants = stage[i].variants;
+            stageLabel[i].style.color = "#000000";
+            console.log(variants)
+        }
+      }
+    if(!flag){
+      for(let i=0; i<stageBtn.length;i++){
+        stageBtn[i].checked = false;
+        }
+    }
+  }
+
+  const allBtn = stanza.root.querySelectorAll(".allBtn");
+  allBtn[0].addEventListener("click", selectAll);
+  allBtn[1].addEventListener("click", clearAll);
+
+  function selectAll(){
+    for (let i=0; i<stageBtn.length; i++){
+      stageBtn[i].checked = true;
+    }
+    checkStage();
+  }
+  function clearAll(){
+    for (let i=0; i<stageBtn.length; i++){
+      stageBtn[i].checked = false;
+    }
+    checkStage();
+  }
+
   if (typeof variants === "object") {
     draw(variants, stanza, params);
     appendDlButton(
@@ -85,6 +131,7 @@ export default async function gwasManhattanPlot(stanza, params) {
       "manhattan_plot",
       stanza
     );
+    selectAll();
   }
 }
 
@@ -127,7 +174,6 @@ async function draw(dataset, stanza, params) {
   const label_key = params.label_key;
 
   console.log(label_key);
-  console.log(variants[0].rsId);
   console.log(variants[0].rsId);
 
   const chromosomes = [
@@ -295,7 +341,7 @@ async function draw(dataset, stanza, params) {
     .attr("y", 2)
     .attr("width", areaWidth)
     .attr("height", 16)
-    .attr("fill", "#8888ff")
+    .attr("fill", "#C2E3F2")
     .call(
       d3
         .drag()
