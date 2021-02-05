@@ -12,7 +12,14 @@
     "lint:stylelint:fix": "stylelint '**/*.scss' --fix",
     "lint:prettier": "prettier . --check",
     "lint:prettier:fix": "prettier . --write",
-    "lint:editorconfig": "editorconfig-checker"
+    "lint:editorconfig": "editorconfig-checker",
+    "docusaurus": "docusaurus",
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "deploy": "docusaurus deploy",
+    "serve": "docusaurus serve",
+    "clear": "docusaurus clear"
   },
   "dependencies": {
     "@rollup/plugin-replace": "^2.3.4",
@@ -27,7 +34,13 @@
     "togostanza": "^3.0.0-beta.12",
     "vega": "^5.19.1",
     "vega-embed": "^6.15.0",
-    "vega-lite": "^4.17.0"
+    "vega-lite": "^4.17.0",
+    "@docusaurus/core": "2.0.0-alpha.70",
+    "@docusaurus/preset-classic": "2.0.0-alpha.70",
+    "@mdx-js/react": "^1.6.21",
+    "clsx": "^1.1.1",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4"
   },
   "devDependencies": {
     "editorconfig-checker": "^3.3.0",
@@ -40,6 +53,18 @@
     "stylelint-config-prettier": "^8.0.2",
     "stylelint-config-recommended-scss": "^4.2.0",
     "stylelint-scss": "^3.18.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "engines": {
     "node": ">=14"
