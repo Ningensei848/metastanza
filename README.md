@@ -17,7 +17,6 @@ Describe about the repository here. These contents will help the repository user
 - `npm run lint` checks the format of code
 - `npm run lint:fix` fixes fixable format errors
 
-
 ## docusaurus
 
 # Website
