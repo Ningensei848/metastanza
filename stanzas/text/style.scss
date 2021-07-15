@@ -1,29 +1,35 @@
 // Load the repository-wide global style here. The actual file is located at ../common.scss for details.
 @use '@/common.scss';
-// The following is just an example. Feel free to modify it.
-// --greeting-color and --greeting-align are style variables, which are defined in metadata.json.
-main {
-  padding: 1rem 2rem;
-}
 
 * {
-  font-family: var(--font-family);
+  font-family: var(--togostanza-font-family);
   box-sizing: border-box;
 }
 
-table {
-  display: block;
-  width: var(--text-width);
-  height: var(--text-height);
-  margin: var(--text-padding);
-  border: var(--table-border);
-  tbody {
-    tr {
-      td {
-        word-break: break-all;
-        color: var(--text-font-color);
-        font-size: var(--text-font-size);
-        font-weight: var(--text-font-weight);
+main {
+  background-color: var(--togostanza-background-color);
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--togostanza-background-color);
+  .menu {
+    display: flex;
+    padding: 5px;
+    a {
+      color: var(--togostanza-text-font-color);
+    }
+  }
+  table {
+    display: block;
+    tbody {
+      tr {
+        td {
+          word-break: break-all;
+          color: var(--togostanza-text-font-color);
+          font-size: var(--togostanza-text-font-size);
+          font-weight: var(--togostanza-text-font-weight);
+        }
       }
     }
   }

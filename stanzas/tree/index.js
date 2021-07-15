@@ -1,183 +1,181 @@
+import Stanza from "togostanza/stanza";
+
 import vegaEmbed from "vega-embed";
+import loadData from "@/lib/load-data";
+import {
+  downloadSvgMenuItem,
+  downloadPngMenuItem,
+} from "@/lib/metastanza_utils.js";
 
-export default async function tree(stanza, params) {
-  function css(key) {
-    return getComputedStyle(stanza.root.host).getPropertyValue(key);
+export default class Tree extends Stanza {
+  menu() {
+    return [
+      downloadSvgMenuItem(this, "tree"),
+      downloadPngMenuItem(this, "tree"),
+    ];
   }
 
-  const vegaJson = await fetch(
-    "https://vega.github.io/vega/examples/tree-layout.vg.json"
-  ).then((res) => res.json());
+  async render() {
+    const css = (key) => getComputedStyle(this.element).getPropertyValue(key);
 
-  //width,height,padding
-  const width = Number(params["width"]);
-  const height = Number(params["height"]);
-  const padding = Number(params["padding"]);
+    //width,height,padding
+    const width = this.params["width"];
+    const height = this.params["height"];
+    const padding = this.params["padding"];
 
-  //data
-  const labelVariable = params["label-variable"]; //"name"
-  const parentVariable = params["parent-variable"]; //"parent"
-  const idVariable = params["id-variable"]; //"id-variable"
+    //data
+    const labelVariable = this.params["label"]; //"name"
+    const parentVariable = this.params["parent-node"]; //"parent"
+    const idVariable = this.params["node"]; //"id-variable"
 
-  const data = [
-    {
-      name: "tree",
-      url: params["your-data"],
-      transform: [
-        {
-          type: "stratify",
-          key: idVariable,
-          parentKey: parentVariable,
-        },
-        {
-          type: "tree",
-          method: { signal: "layout" },
-          size: [{ signal: "height" }, { signal: "width - 100" }],
-          separation: { signal: "separation" },
-          as: ["y", "x", "depth", "children"],
-        },
-      ],
-    },
-    {
-      name: "links",
-      source: "tree",
-      transform: [
-        { type: "treelinks" },
-        {
-          type: "linkpath",
-          orient: "horizontal",
-          shape: { signal: "links" },
-        },
-      ],
-    },
-  ];
+    const values = await loadData(
+      this.params["data-url"],
+      this.params["data-type"]
+    );
 
-  //scales
-  const scales = [
-    {
-      name: "color",
-      type: "ordinal",
-      range: [
-        "var(--series-0-color)",
-        "var(--series-1-color)",
-        "var(--series-2-color)",
-        "var(--series-3-color)",
-        "var(--series-4-color)",
-        "var(--series-5-color)",
-      ],
-      domain: { data: "tree", field: "depth" },
-      zero: true,
-    },
-  ];
+    const signals = [
+      {
+        name: "labels",
+        value: true,
+      },
+      {
+        name: "layout",
+        value: "tidy",
+      },
+      {
+        name: "links",
+        value: "diagonal",
+      },
+      {
+        name: "separation",
+        value: false,
+      },
+    ];
 
-  //legend
-  const legends = [
-    {
-      fill: "color",
-      title: params["legend-title"],
-      titleColor: "var(--legendtitle-color)",
-      labelColor: "var(--legendlabel-color)",
-      orient: "top-left",
-      encode: {
-        title: {
+    const data = [
+      {
+        name: "tree",
+        values,
+        transform: [
+          {
+            type: "stratify",
+            key: idVariable,
+            parentKey: parentVariable,
+          },
+          {
+            type: "tree",
+            method: { signal: "layout" },
+            size: [{ signal: "height" }, { signal: "width - 100" }],
+            separation: { signal: "separation" },
+            as: ["y", "x", "depth", "children"],
+          },
+        ],
+      },
+      {
+        name: "links",
+        source: "tree",
+        transform: [
+          { type: "treelinks" },
+          {
+            type: "linkpath",
+            orient: "horizontal",
+            shape: { signal: "links" },
+          },
+        ],
+      },
+    ];
+
+    //scales
+    const scales = [
+      {
+        name: "color",
+        type: "ordinal",
+        range: [
+          "var(--togostanza-series-0-color)",
+          "var(--togostanza-series-1-color)",
+          "var(--togostanza-series-2-color)",
+          "var(--togostanza-series-3-color)",
+          "var(--togostanza-series-4-color)",
+          "var(--togostanza-series-5-color)",
+        ],
+        domain: { data: "tree", field: "depth" },
+        zero: true,
+      },
+    ];
+
+    //marks
+    const marks = [
+      {
+        type: "path",
+        from: { data: "links" },
+        encode: {
           update: {
-            font: { value: css("--legend-font") },
-            fontSize: { value: css("--legendtitle-size") },
-            fontWeight: { value: css("--legendtitle-weight") },
+            path: { field: "path" },
+            stroke: { value: "var(--togostanza-edge-color)" },
           },
         },
-        labels: {
-          interactive: true,
-          update: {
-            font: { value: css("--legend-font") },
-            fontSize: { value: css("--legendlabel-size") },
-          },
-          text: { field: "value" },
-        },
-        symbols: {
-          update: {
-            shape: { value: params["symbol-shape"] },
+      },
+      {
+        type: "symbol",
+        from: { data: "tree" },
+        encode: {
+          enter: {
+            size: {
+              value: css("--togostanza-node-size"),
+            },
             stroke: { value: "var(--stroke-color)" },
-            strokeWidth: { value: css("--stroke-width") },
+          },
+          update: {
+            x: { field: "x" },
+            y: { field: "y" },
+            fill: { scale: "color", field: "depth" },
+            stroke: { value: "var(--togostanza-border-color)" },
+            strokeWidth: { value: css("--togostanza-border-width") },
           },
         },
       },
-    },
-  ];
-
-  //marks
-  const marks = [
-    {
-      type: "path",
-      from: { data: "links" },
-      encode: {
-        update: {
-          path: { field: "path" },
-          stroke: { value: "var(--branch-color)" },
-        },
-      },
-    },
-    {
-      type: "symbol",
-      from: { data: "tree" },
-      encode: {
-        enter: {
-          size: {
-            value: css("--node-size"),
+      {
+        type: "text",
+        from: { data: "tree" },
+        encode: {
+          enter: {
+            text: {
+              field:
+                this.params["label"] === ""
+                  ? this.params["node"]
+                  : labelVariable,
+            },
+            font: { value: css("--togostanza-font-family") },
+            fontSize: { value: css("--togostanza-label-font-size") },
+            baseline: { value: "middle" },
           },
-          stroke: { value: "var(--stroke-color)" },
-        },
-        update: {
-          x: { field: "x" },
-          y: { field: "y" },
-          fill: { scale: "color", field: "depth" },
-          stroke: { value: "var(--stroke-color)" },
-          strokeWidth: { value: css("--stroke-width") },
-        },
-      },
-    },
-    {
-      type: "text",
-      from: { data: "tree" },
-      encode: {
-        enter: {
-          text: { field: labelVariable },
-          font: { value: css("--font-family") },
-          fontSize: { value: css("--label-size") },
-          baseline: { value: "middle" },
-        },
-        update: {
-          x: { field: "x" },
-          y: { field: "y" },
-          dx: { signal: "datum.children ? -7 : 7" },
-          align: { signal: "datum.children ? 'right' : 'left'" },
-          opacity: { signal: "labels ? 1 : 0" },
-          fill: { value: "var(--label-color)" },
+          update: {
+            x: { field: "x" },
+            y: { field: "y" },
+            dx: { signal: "datum.children ? -7 : 7" },
+            align: { signal: "datum.children ? 'right' : 'left'" },
+            opacity: { signal: "labels ? 1 : 0" },
+            fill: { value: "var(--togostanza-label-font-color)" },
+          },
         },
       },
-    },
-  ];
+    ];
 
-  const spec = {
-    $schema: "https://vega.github.io/schema/vega/v5.json",
-    width,
-    height,
-    padding,
-    signals: vegaJson.signals,
-    data,
-    scales,
-    legends,
-    marks,
-  };
+    const spec = {
+      $schema: "https://vega.github.io/schema/vega/v5.json",
+      width,
+      height,
+      padding,
+      signals,
+      data,
+      scales,
+      marks,
+    };
 
-  //delete default controller
-  for (const signal of vegaJson.signals) {
-    delete signal.bind;
+    const el = this.root.querySelector("main");
+    const opts = {
+      renderer: "svg",
+    };
+    await vegaEmbed(el, spec, opts);
   }
-
-  const el = stanza.root.querySelector("main");
-  const opts = {
-    renderer: "svg",
-  };
-  await vegaEmbed(el, spec, opts);
 }
